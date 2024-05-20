@@ -29,10 +29,9 @@ class Board:
         apple_pos = random_coordinates()
         check = False
         while not check:
-            for pos in self.snake.positions:
-                if apple_pos == pos:
-                    apple_pos = random_coordinates()
-                    break
+            if apple_pos in self.snake.positions:
+                apple_pos = random_coordinates()
+                continue
             check = True
         apple = Apple(*apple_pos)
         self.apples.append(apple)
