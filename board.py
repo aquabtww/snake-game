@@ -144,9 +144,12 @@ class Snake:
         """
         for k, pos in enumerate(self.positions[:-1]):
             rect = get_cell_rect(pos[0], pos[1])
-            color = (lerp(20, 100, 10 / (len(self.positions) - k - 1)),
-                     lerp(30, 180, 10 / (len(self.positions) - k - 1)),
-                     lerp(20, 100, 10 / (len(self.positions) - k - 1)))
+
+            mu = 10 / (len(self.positions) - k - 1)
+            color = (lerp(20, 130, mu),
+                     lerp(30, 180, mu),
+                     lerp(20, 130, mu))
+
             pygame.draw.rect(display, color, rect, 0)
 
         head_rect = get_cell_rect(self.positions[-1][0], self.positions[-1][1])
