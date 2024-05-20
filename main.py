@@ -87,6 +87,12 @@ class Game:
         self.board.reset()
         self.pause()
 
+    def win(self) -> None:
+        """
+        Победа в игре.
+        :return: Ничего
+        """
+
     def run(self) -> None:
         """
         Запуск игры.

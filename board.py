@@ -7,6 +7,9 @@ from utils import get_cell_rect, lerp, random_coordinates
 
 
 class Board:
+    """
+    Класс, отвечающий за игровое поле.
+    """
     def __init__(self, game):
         self.game = game
 
@@ -19,6 +22,10 @@ class Board:
         self.spawn_apple()
 
     def reset(self):
+        """
+        Сброс игрового поля.
+        :return: Ничего
+        """
         self.snake.reset()
         self.snake.positions.append((2, 2))
 
@@ -26,6 +33,10 @@ class Board:
         self.spawn_apple()
 
     def spawn_apple(self):
+        """
+        Создать яблоко на поле.
+        :return: Ничего
+        """
         apple_pos = random_coordinates()
         check = False
         while not check:
@@ -36,11 +47,28 @@ class Board:
         apple = Apple(*apple_pos)
         self.apples.append(apple)
 
-    def update(self):
+    def update(self) -> None:
+        """
+        Обновление игрового поля.
+        :return: Ничего
+        """
         self.snake.move()
 
+    def check_win(self) -> None:
+        """
+        Проверка на победу в игре.
+        :return: Ничего
+        """
+        if len(self.snake.positions) == BOARD_SIZE[0] * BOARD_SIZE[1]:
+            self.game.win()
+
     @staticmethod
-    def render(display):
+    def render(display) -> None:
+        """
+        Отрисовка игрового поля.
+        :param display: :class:`Surface` на котором нужно отрисовать поле.
+        :return: Ничего
+        """
         display.fill((0, 0, 0))
         width, height = BOARD_SIZE
         for x in range(width + 1):
@@ -54,6 +82,9 @@ class Board:
 
 
 class Snake:
+    """
+    Класс, отвечающий за отрисовку змеи и её передвижение.
+    """
     def __init__(self, game):
         self.game = game
 
@@ -62,11 +93,20 @@ class Snake:
         self.positions = []
 
     def reset(self) -> None:
+        """
+        Сброс всех переменных.
+        :return: Ничего
+        """
         self.last_direction = None
         self.direction = (0, 0)
         self.positions = []
 
     def set_direction(self, direction: tuple[int, int]) -> None:
+        """
+        Изменение направления движения змеи.
+        :param direction: Вектор направления
+        :return: Ничего
+        """
         x, y = direction
         if self.last_direction is not None and sum(self.last_direction) != 0:
             if self.last_direction[0] == x * -1 or self.last_direction[1] == y * -1:
@@ -74,6 +114,10 @@ class Snake:
         self.direction = (x, y)
 
     def move(self) -> None:
+        """
+        Передвижение змеи.
+        :return: Ничего
+        """
         if self.direction == (0, 0):
             return
 
@@ -93,6 +137,11 @@ class Snake:
         self.positions = self.positions[1:] + [new_head_position]
 
     def render(self, display: Surface) -> None:
+        """
+        Отрисовка змеи.
+        :param display: :class:`Surface` на котором нужно отрисовать змею.
+        :return: Ничего
+        """
         for k, pos in enumerate(self.positions[:-1]):
             rect = get_cell_rect(pos[0], pos[1])
             color = (lerp(20, 100, 10 / (len(self.positions) - k - 1)),
@@ -105,12 +154,25 @@ class Snake:
 
 
 class Apple:
+    """
+    Класс, отвечающий за отрисовку и поедание яблок.
+    """
     def __init__(self, x, y):
         self.pos = (x, y)
 
     def check_eat(self, snake_pos: tuple[int, int]) -> bool:
+        """
+        Проверка на то, может ли змея съесть яблоко.
+        :param snake_pos: Текущая позиция змеи.
+        :return:
+        """
         return snake_pos == self.pos
 
     def render(self, display: Surface) -> None:
+        """
+        Отрисовка яблока.
+        :param display: :class:`Surface` на котором нужно отрисовать яблоко.
+        :return: Ничего
+        """
         rect = get_cell_rect(self.pos[0], self.pos[1])
         pygame.draw.rect(display, (175, 60, 60), rect, 0)
