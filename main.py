@@ -200,7 +200,7 @@ class Game:
                         button.check_input()
 
             self.display.blit(win_text, (20, 40))
-            self.display.blit(score_text, (20, 80))
+            self.display.blit(score_text, (20, 85))
 
             for button in buttons:
                 button.render(self.display)
