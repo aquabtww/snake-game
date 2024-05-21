@@ -15,8 +15,6 @@ class Board:
         self.snake = Snake(game)
         self.apples: list[Apple] = []
 
-        self.reset()
-
     def reset(self):
         """
         Сброс игрового поля.
