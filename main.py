@@ -3,7 +3,6 @@ import sys
 import pygame
 
 import settings
-from settings import BOARD_OFFSET, BOARD_SIZE, CELL_SIZE, FPS
 from board import Board
 from events import UPDATE_EVENT
 from ui import Button
@@ -27,9 +26,13 @@ class Game:
         self.board: Board = Board(self)
 
     def game_loop(self) -> None:
+        offset = settings.BOARD_OFFSET
+        width, height = settings.BOARD_SIZE
+        cell_size = settings.CELL_SIZE
+
         self.display = pygame.display.set_mode(
-            (BOARD_OFFSET * 2 + BOARD_SIZE[0] * CELL_SIZE,
-             BOARD_OFFSET * 2 + BOARD_SIZE[1] * CELL_SIZE))
+            (offset * 2 + width * cell_size,
+             offset * 2 + height * cell_size))
 
         pygame.time.set_timer(UPDATE_EVENT, settings.UPDATE_SPEED)
 
@@ -58,10 +61,10 @@ class Game:
                         apple.render(self.display)
 
                     score = Game.font_30.render(str(len(self.board.snake.positions) - 1), True, (255, 255, 255))
-                    self.display.blit(score, (BOARD_OFFSET + BOARD_SIZE[0] * CELL_SIZE // 2, 20))
+                    self.display.blit(score, (offset + width * cell_size // 2, 20))
 
             pygame.display.update()
-            self.clock.tick(FPS)
+            self.clock.tick(settings.FPS)
 
     def pause_game(self) -> None:
         self.display = pygame.display.set_mode((650, 300))
@@ -91,7 +94,7 @@ class Game:
             self.display.blit(pause_text, (20, 40))
 
             pygame.display.update()
-            self.clock.tick(FPS)
+            self.clock.tick(settings.FPS)
 
     def continue_game(self):
         self.board.snake.last_direction = None
@@ -122,7 +125,7 @@ class Game:
                 button.render(self.display)
 
             pygame.display.update()
-            self.clock.tick(FPS)
+            self.clock.tick(settings.FPS)
 
     def settings_menu(self):
         self.display = pygame.display.set_mode((465, 500))
@@ -171,7 +174,7 @@ class Game:
                 button.render(self.display)
 
             pygame.display.update()
-            self.clock.tick(FPS)
+            self.clock.tick(settings.FPS)
 
     def end_screen(self, msg: str):
         self.display = pygame.display.set_mode((400, 400))
@@ -203,7 +206,7 @@ class Game:
                 button.render(self.display)
 
             pygame.display.update()
-            self.clock.tick(FPS)
+            self.clock.tick(settings.FPS)
 
     def win_screen(self):
         """
