@@ -9,7 +9,7 @@ def get_cell_rect(x: int, y: int) -> tuple[int, int, int, int]:
 
 
 def lerp(a: int, b: int, step: float) -> int:
-    return round(a + (abs(step) / 10) * (b - a))
+    return round(a + abs(step) * (b - a))
 
 
 def random_coordinates() -> tuple[int, int]:

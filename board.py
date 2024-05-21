@@ -1,8 +1,7 @@
 import pygame
 from pygame import Surface
 
-from events import UPDATE_EVENT
-from settings import BOARD_SIZE, CELL_SIZE, BOARD_OFFSET, UPDATE_SPEED
+import settings
 from utils import get_cell_rect, lerp, random_coordinates
 
 
@@ -13,13 +12,10 @@ class Board:
     def __init__(self, game):
         self.game = game
 
-        pygame.time.set_timer(UPDATE_EVENT, UPDATE_SPEED)
-
         self.snake = Snake(game)
-        self.snake.positions.append((2, 2))
-
         self.apples: list[Apple] = []
-        self.spawn_apple()
+
+        self.reset()
 
     def reset(self):
         """
@@ -29,7 +25,7 @@ class Board:
         self.snake.reset()
         self.snake.positions.append((2, 2))
 
-        self.apples: list[Apple] = []
+        self.apples.clear()
         self.spawn_apple()
 
     def spawn_apple(self):
@@ -37,6 +33,8 @@ class Board:
         Создать яблоко на поле.
         :return: Ничего
         """
+        if self.can_win():
+            return
         apple_pos = random_coordinates()
         check = False
         while not check:
@@ -53,13 +51,22 @@ class Board:
         :return: Ничего
         """
         self.snake.move()
+        self.check_win()
+
+    def can_win(self) -> None:
+        """
+        Проверка на победу в игре.
+        :return: Победил ты или нет.
+        """
+        width, height = settings.BOARD_SIZE
+        return len(self.snake.positions) == width * height
 
     def check_win(self) -> None:
         """
         Проверка на победу в игре.
         :return: Ничего
         """
-        if len(self.snake.positions) == BOARD_SIZE[0] * BOARD_SIZE[1]:
+        if self.can_win():
             self.game.win()
 
     @staticmethod
@@ -70,15 +77,17 @@ class Board:
         :return: Ничего
         """
         display.fill((0, 0, 0))
-        width, height = BOARD_SIZE
+        width, height = settings.BOARD_SIZE
+        offset = settings.BOARD_OFFSET
+        cell_size = settings.CELL_SIZE
         for x in range(width + 1):
             pygame.draw.line(display, (255, 255, 255),
-                             (BOARD_OFFSET + x * CELL_SIZE, BOARD_OFFSET),
-                             (BOARD_OFFSET + x * CELL_SIZE, BOARD_OFFSET + height * CELL_SIZE))
+                             (offset + x * cell_size, offset),
+                             (offset + x * cell_size, offset + height * cell_size))
         for y in range(height + 1):
             pygame.draw.line(display, (255, 255, 255),
-                             (BOARD_OFFSET, BOARD_OFFSET + y * CELL_SIZE),
-                             (BOARD_OFFSET + width * CELL_SIZE, BOARD_OFFSET + y * CELL_SIZE))
+                             (offset, offset + y * cell_size),
+                             (offset + width * cell_size, offset + y * cell_size))
 
 
 class Snake:
@@ -121,9 +130,10 @@ class Snake:
         if self.direction == (0, 0):
             return
 
+        width, height = settings.BOARD_SIZE
         new_head_position = self.positions[-1][0] + self.direction[0], self.positions[-1][1] + self.direction[1]
-        if (new_head_position[0] < 0 or new_head_position[0] >= BOARD_SIZE[0]) or \
-                (new_head_position[1] < 0 or new_head_position[1] >= BOARD_SIZE[1]) or \
+        if (new_head_position[0] < 0 or new_head_position[0] >= width) or \
+                (new_head_position[1] < 0 or new_head_position[1] >= height) or \
                 new_head_position in self.positions[1:]:
             self.game.lose()
 
@@ -145,10 +155,10 @@ class Snake:
         for k, pos in enumerate(self.positions[:-1]):
             rect = get_cell_rect(pos[0], pos[1])
 
-            mu = 10 / (len(self.positions) - k - 1)
-            color = (lerp(20, 130, mu),
-                     lerp(30, 180, mu),
-                     lerp(20, 130, mu))
+            mu = 1 / abs(len(self.positions) - k - 1)
+            color = (lerp(40, 130, mu),
+                     lerp(60, 180, mu),
+                     lerp(40, 130, mu))
 
             pygame.draw.rect(display, color, rect, 0)
 

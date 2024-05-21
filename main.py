@@ -2,9 +2,11 @@ import sys
 
 import pygame
 
+import settings
 from settings import BOARD_OFFSET, BOARD_SIZE, CELL_SIZE, FPS
 from board import Board
 from events import UPDATE_EVENT
+from ui import Button
 
 
 class Game:
@@ -13,10 +15,13 @@ class Game:
     """
     pygame.init()
 
+    font_30 = pygame.font.SysFont("bahnschrift", 30)
+    font_48 = pygame.font.SysFont("bahnschrift", 48)
+
     def __init__(self):
         pygame.display.set_caption("Змейка")
 
-        self.display = pygame.display.set_mode((800, 800))
+        self.display = pygame.display.set_mode((400, 400))
         self.clock = pygame.time.Clock()
 
         self.board: Board = Board(self)
@@ -26,13 +31,15 @@ class Game:
             (BOARD_OFFSET * 2 + BOARD_SIZE[0] * CELL_SIZE,
              BOARD_OFFSET * 2 + BOARD_SIZE[1] * CELL_SIZE))
 
+        pygame.time.set_timer(UPDATE_EVENT, settings.UPDATE_SPEED)
+
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.quit()
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
-                        self.pause()
+                        self.pause_game()
                         break
 
                     directions = {
@@ -50,55 +57,200 @@ class Game:
                     for apple in self.board.apples:
                         apple.render(self.display)
 
+                    score = Game.font_30.render(str(len(self.board.snake.positions) - 1), True, (255, 255, 255))
+                    self.display.blit(score, (BOARD_OFFSET + BOARD_SIZE[0] * CELL_SIZE // 2, 20))
+
             pygame.display.update()
             self.clock.tick(FPS)
 
-    def pause(self) -> None:
-        self.display = pygame.display.set_mode((800, 800))
+    def pause_game(self) -> None:
+        self.display = pygame.display.set_mode((650, 300))
 
-        self.display.fill((0, 0, 0))
+        pause_text = Game.font_48.render("Пауза", True, (255, 255, 255))
 
-        font_48 = pygame.font.SysFont("bahnschrift", 48)
-        pause_text = font_48.render("Пауза", True, (255, 255, 255))
-
-        self.display.blit(pause_text, (10, 100))
+        buttons = [
+            Button(rect=pygame.rect.Rect(20, 100, 250, 40),
+                   text="Продолжить", font=Game.font_30, callback=self.continue_game),
+            Button(rect=pygame.rect.Rect(20, 150, 250, 40),
+                   text="Главное меню", font=Game.font_30, callback=self.main_menu)
+        ]
 
         while True:
+            self.display.fill((0, 0, 0))
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.quit()
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    self.board.snake.last_direction = None
-                    self.board.snake.direction = (0, 0)
-                    self.game_loop()
-                    break
+                if event.type == pygame.MOUSEBUTTONUP:
+                    for button in buttons:
+                        button.check_input()
+
+            for button in buttons:
+                button.render(self.display)
+
+            self.display.blit(pause_text, (20, 40))
 
             pygame.display.update()
             self.clock.tick(FPS)
 
+    def continue_game(self):
+        self.board.snake.last_direction = None
+        self.board.snake.direction = (0, 0)
+        self.game_loop()
+
     def main_menu(self):
-        ...
+        self.display = pygame.display.set_mode((400, 400))
+
+        buttons = [
+            Button(rect=pygame.rect.Rect(20, 20, 200, 40),
+                   text="Играть", font=Game.font_30, callback=self.game_loop),
+            Button(rect=pygame.rect.Rect(20, 75, 200, 40),
+                   text="Настройки", font=Game.font_30, callback=self.settings_menu)
+        ]
+
+        while True:
+            self.display.fill((0, 0, 0))
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.quit()
+                if event.type == pygame.MOUSEBUTTONUP:
+                    for button in buttons:
+                        button.check_input()
+
+            for button in buttons:
+                button.render(self.display)
+
+            pygame.display.update()
+            self.clock.tick(FPS)
+
+    def settings_menu(self):
+        self.display = pygame.display.set_mode((465, 500))
+
+        buttons = [
+            Button(rect=pygame.rect.Rect(20, 20, 250, 40),
+                   text="Главное меню", font=Game.font_30, callback=self.main_menu),
+
+            Button(rect=pygame.rect.Rect(75, 75, 310, 40),
+                   text=f"Скорость Игры ({settings.UPDATE_SPEED})", font=Game.font_30),
+            Button(rect=pygame.rect.Rect(20, 75, 40, 40),
+                   text="-", font=Game.font_30, callback=settings.take_speed),
+            Button(rect=pygame.rect.Rect(400, 75, 40, 40),
+                   text="+", font=Game.font_30, callback=settings.add_speed),
+
+            Button(rect=pygame.rect.Rect(75, 130, 310, 40),
+                   text=f"Ширина поля ({settings.BOARD_SIZE[0]})", font=Game.font_30),
+            Button(rect=pygame.rect.Rect(20, 130, 40, 40),
+                   text="-", font=Game.font_30, callback=settings.take_width),
+            Button(rect=pygame.rect.Rect(400, 130, 40, 40),
+                   text="+", font=Game.font_30, callback=settings.add_width),
+
+            Button(rect=pygame.rect.Rect(75, 185, 310, 40),
+                   text=f"Высота поля ({settings.BOARD_SIZE[1]})", font=Game.font_30),
+            Button(rect=pygame.rect.Rect(20, 185, 40, 40),
+                   text="-", font=Game.font_30, callback=settings.take_height),
+            Button(rect=pygame.rect.Rect(400, 185, 40, 40),
+                   text="+", font=Game.font_30, callback=settings.add_height)
+        ]
+
+        while True:
+            self.display.fill((0, 0, 0))
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.quit()
+                if event.type == pygame.MOUSEBUTTONUP:
+                    for button in buttons:
+                        button.check_input()
+
+            buttons[1].update_text(f"Скорость Игры ({settings.UPDATE_SPEED})")
+            buttons[4].update_text(f"Ширина поля ({settings.BOARD_SIZE[0]})")
+            buttons[7].update_text(f"Высота поля ({settings.BOARD_SIZE[1]})")
+
+            for button in buttons:
+                button.render(self.display)
+
+            pygame.display.update()
+            self.clock.tick(FPS)
+
+    def win_screen(self):
+        self.display = pygame.display.set_mode((400, 400))
+
+        width, height = settings.BOARD_SIZE
+        win_text = Game.font_48.render(f"Победа!", True, (255, 255, 255))
+        score_text = Game.font_30.render(f"Счет: {width * height - 1}", True, (255, 255, 255))
+
+        buttons = [
+            Button(rect=pygame.rect.Rect(25, 120, 240, 40),
+                   text="Играть", font=Game.font_30, callback=lambda: (self.board.reset(), self.game_loop())),
+            Button(rect=pygame.rect.Rect(25, 175, 240, 40),
+                   text="Главное меню", font=Game.font_30, callback=lambda: (self.board.reset(), self.main_menu()))
+        ]
+
+        while True:
+            self.display.fill((0, 0, 0))
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.quit()
+                if event.type == pygame.MOUSEBUTTONUP:
+                    for button in buttons:
+                        button.check_input()
+
+            self.display.blit(win_text, (20, 40))
+            self.display.blit(score_text, (20, 80))
+
+            for button in buttons:
+                button.render(self.display)
+
+            pygame.display.update()
+            self.clock.tick(FPS)
+
+    def lose_screen(self):
+        self.display = pygame.display.set_mode((400, 400))
+
+        win_text = Game.font_48.render(f"Поражение!", True, (255, 255, 255))
+        score_text = Game.font_30.render(f"Счет: {len(self.board.snake.positions) - 1}", True, (255, 255, 255))
+
+        buttons = [
+            Button(rect=pygame.rect.Rect(25, 120, 240, 40),
+                   text="Играть", font=Game.font_30, callback=lambda: (self.board.reset(), self.game_loop())),
+            Button(rect=pygame.rect.Rect(25, 175, 240, 40),
+                   text="Главное меню", font=Game.font_30, callback=lambda: (self.board.reset(), self.main_menu()))
+        ]
+
+        while True:
+            self.display.fill((0, 0, 0))
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.quit()
+                if event.type == pygame.MOUSEBUTTONUP:
+                    for button in buttons:
+                        button.check_input()
+
+            self.display.blit(win_text, (20, 40))
+            self.display.blit(score_text, (20, 80))
+
+            for button in buttons:
+                button.render(self.display)
+
+            pygame.display.update()
+            self.clock.tick(FPS)
 
     def lose(self) -> None:
         """
         Поражение в игре.
         :return: Ничего
         """
-        self.board.reset()
-        self.pause()
+        self.lose_screen()
 
     def win(self) -> None:
         """
         Победа в игре.
         :return: Ничего
         """
-
-    def run(self) -> None:
-        """
-        Запуск игры.
-        :return: Ничего
-        """
-        self.pause()
+        self.win_screen()
 
     @staticmethod
     def quit() -> None:
@@ -112,4 +264,4 @@ class Game:
 
 if __name__ == "__main__":
     game = Game()
-    game.run()
+    game.main_menu()
