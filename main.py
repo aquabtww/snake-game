@@ -59,6 +59,8 @@ class Game:
                     self.board.snake.render(self.display)
                     for apple in self.board.apples:
                         apple.render(self.display)
+                    for wall in self.board.walls:
+                        wall.render(self.display)
 
                     score = Game.font_30.render(str(len(self.board.snake.positions) - 1), True, (255, 255, 255))
                     self.display.blit(score, (offset + width * cell_size // 2, 20))
@@ -128,32 +130,39 @@ class Game:
             self.clock.tick(settings.FPS)
 
     def settings_menu(self):
-        self.display = pygame.display.set_mode((465, 500))
+        self.display = pygame.display.set_mode((485, 500))
 
         buttons = [
             Button(rect=pygame.rect.Rect(20, 20, 250, 40),
                    text="Главное меню", font=Game.font_30, callback=self.main_menu),
 
-            Button(rect=pygame.rect.Rect(75, 75, 310, 40),
-                   text=f"Скорость Игры ({settings.UPDATE_SPEED})", font=Game.font_30),
+            Button(rect=pygame.rect.Rect(75, 75, 340, 40),
+                   text=f"Скорость Игры ({settings.UPDATE_SPEED}мс)", font=Game.font_30),
             Button(rect=pygame.rect.Rect(20, 75, 40, 40),
                    text="-", font=Game.font_30, callback=settings.take_speed),
-            Button(rect=pygame.rect.Rect(400, 75, 40, 40),
+            Button(rect=pygame.rect.Rect(430, 75, 40, 40),
                    text="+", font=Game.font_30, callback=settings.add_speed),
 
-            Button(rect=pygame.rect.Rect(75, 130, 310, 40),
+            Button(rect=pygame.rect.Rect(75, 130, 340, 40),
                    text=f"Ширина поля ({settings.BOARD_SIZE[0]})", font=Game.font_30),
             Button(rect=pygame.rect.Rect(20, 130, 40, 40),
                    text="-", font=Game.font_30, callback=settings.take_width),
-            Button(rect=pygame.rect.Rect(400, 130, 40, 40),
+            Button(rect=pygame.rect.Rect(430, 130, 40, 40),
                    text="+", font=Game.font_30, callback=settings.add_width),
 
-            Button(rect=pygame.rect.Rect(75, 185, 310, 40),
+            Button(rect=pygame.rect.Rect(75, 185, 340, 40),
                    text=f"Высота поля ({settings.BOARD_SIZE[1]})", font=Game.font_30),
             Button(rect=pygame.rect.Rect(20, 185, 40, 40),
                    text="-", font=Game.font_30, callback=settings.take_height),
-            Button(rect=pygame.rect.Rect(400, 185, 40, 40),
-                   text="+", font=Game.font_30, callback=settings.add_height)
+            Button(rect=pygame.rect.Rect(430, 185, 40, 40),
+                   text="+", font=Game.font_30, callback=settings.add_height),
+
+            Button(rect=pygame.rect.Rect(75, 240, 340, 40),
+                   text=f"Количество стен ({settings.WALL_AMOUNT})", font=Game.font_30),
+            Button(rect=pygame.rect.Rect(20, 240, 40, 40),
+                   text="-", font=Game.font_30, callback=settings.take_wall),
+            Button(rect=pygame.rect.Rect(430, 240, 40, 40),
+                   text="+", font=Game.font_30, callback=settings.add_wall)
         ]
 
         while True:
@@ -166,9 +175,10 @@ class Game:
                     for button in buttons:
                         button.check_input()
 
-            buttons[1].update_text(f"Скорость Игры ({settings.UPDATE_SPEED})")
+            buttons[1].update_text(f"Скорость Игры ({settings.UPDATE_SPEED}мс)")
             buttons[4].update_text(f"Ширина поля ({settings.BOARD_SIZE[0]})")
             buttons[7].update_text(f"Высота поля ({settings.BOARD_SIZE[1]})")
+            buttons[10].update_text(f"Количество стен ({settings.WALL_AMOUNT})")
 
             for button in buttons:
                 button.render(self.display)

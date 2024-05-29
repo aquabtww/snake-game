@@ -14,6 +14,7 @@ class Board:
 
         self.snake = Snake(game)
         self.apples: list[Apple] = []
+        self.walls: list[Wall] = []
 
     def reset(self):
         """
@@ -22,6 +23,9 @@ class Board:
         """
         self.snake.reset()
         self.snake.positions.append((2, 2))
+
+        self.walls.clear()
+        self.spawn_walls()
 
         self.apples.clear()
         self.spawn_apple()
@@ -33,15 +37,32 @@ class Board:
         """
         if self.can_win():
             return
-        apple_pos = random_coordinates()
+        pos = random_coordinates()
         check = False
         while not check:
-            if apple_pos in self.snake.positions:
-                apple_pos = random_coordinates()
+            if pos in self.snake.positions or pos in map(lambda x: x.pos, self.walls):
+                pos = random_coordinates()
                 continue
             check = True
-        apple = Apple(*apple_pos)
+        apple = Apple(*pos)
         self.apples.append(apple)
+
+    def spawn_walls(self):
+        """
+        Создать стены на поле.
+        :return: Ничего
+        """
+        wall_amount = settings.WALL_AMOUNT
+        for i in range(wall_amount):
+            pos = random_coordinates()
+            check = False
+            while not check:
+                if pos in self.snake.positions or pos in map(lambda x: x.pos, self.walls):
+                    pos = random_coordinates()
+                    continue
+                check = True
+            wall = Wall(*pos)
+            self.walls.append(wall)
 
     def update(self) -> None:
         """
@@ -57,7 +78,8 @@ class Board:
         :return: Победил ты или нет.
         """
         width, height = settings.BOARD_SIZE
-        return len(self.snake.positions) == width * height
+        wall_amount = settings.WALL_AMOUNT
+        return len(self.snake.positions) == (width * height) - wall_amount
 
     def check_win(self) -> None:
         """
@@ -130,19 +152,26 @@ class Snake:
 
         width, height = settings.BOARD_SIZE
         new_head_position = self.positions[-1][0] + self.direction[0], self.positions[-1][1] + self.direction[1]
+        # Столкновение с рамками, или собой.
         if (new_head_position[0] < 0 or new_head_position[0] >= width) or \
                 (new_head_position[1] < 0 or new_head_position[1] >= height) or \
                 new_head_position in self.positions[1:]:
             self.game.lose()
-
-        self.last_direction = self.direction
+            return
+        # Столкновение со стенами.
+        for wall in self.game.board.walls:
+            if wall.check_collision(new_head_position):
+                self.game.lose()
+                return
+        # Взаимодействие с яблоками.
         for apple in self.game.board.apples:
-            if apple.check_eat(new_head_position):
+            if apple.check_collision(new_head_position):
                 self.positions += [new_head_position]
                 self.game.board.apples.remove(apple)
                 self.game.board.spawn_apple()
                 return
         self.positions = self.positions[1:] + [new_head_position]
+        self.last_direction = self.direction
 
     def render(self, display: Surface) -> None:
         """
@@ -164,20 +193,23 @@ class Snake:
         pygame.draw.rect(display, (0, 255, 0), head_rect, 0)
 
 
-class Apple:
+class InteractableObject:
+    def __init__(self, x, y):
+        self.pos = (x, y)
+
+    def check_collision(self, pos):
+        return self.pos == pos
+
+    def get_pos(self):
+        return self.pos
+
+
+class Apple(InteractableObject):
     """
     Класс, отвечающий за отрисовку и поедание яблок.
     """
     def __init__(self, x, y):
-        self.pos = (x, y)
-
-    def check_eat(self, snake_pos: tuple[int, int]) -> bool:
-        """
-        Проверка на то, может ли змея съесть яблоко.
-        :param snake_pos: Текущая позиция змеи.
-        :return:
-        """
-        return snake_pos == self.pos
+        super().__init__(x, y)
 
     def render(self, display: Surface) -> None:
         """
@@ -187,3 +219,20 @@ class Apple:
         """
         rect = get_cell_rect(self.pos[0], self.pos[1])
         pygame.draw.rect(display, (175, 60, 60), rect, 0)
+
+
+class Wall(InteractableObject):
+    """
+    Класс, отвечающий за отрисовку стен и столкновением с ними.
+    """
+    def __init__(self, x, y):
+        super().__init__(x, y)
+
+    def render(self, display):
+        """
+        Отрисовка стены.
+        :param display: :class:`Surface` на котором нужно отрисовать яблоко.
+        :return: Ничего
+        """
+        rect = get_cell_rect(self.pos[0], self.pos[1])
+        pygame.draw.rect(display, (70, 70, 70), rect, 0)

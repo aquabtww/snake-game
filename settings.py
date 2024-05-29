@@ -4,6 +4,8 @@ BOARD_OFFSET = 75
 BOARD_SIZE = [6, 6]
 CELL_SIZE = 50
 
+WALL_AMOUNT = 2
+
 UPDATE_SPEED = 300
 
 # Константы
@@ -39,3 +41,13 @@ def add_height():
 def take_height():
     global BOARD_SIZE
     BOARD_SIZE[1] = max(3, BOARD_SIZE[1] - 1)
+
+
+def add_wall():
+    global WALL_AMOUNT
+    WALL_AMOUNT = min(WALL_AMOUNT + 1, 5)
+
+
+def take_wall():
+    global WALL_AMOUNT
+    WALL_AMOUNT = max(0, WALL_AMOUNT - 1)
