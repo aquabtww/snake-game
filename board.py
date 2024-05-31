@@ -2,7 +2,7 @@ import pygame
 from pygame import Surface
 
 import settings
-from utils import get_cell_rect, lerp, random_coordinates
+from utils import get_cell_rect, lerp, random_coordinates, random_available_cell
 
 
 class Board:
@@ -38,15 +38,7 @@ class Board:
         """
         if self.can_win():
             return
-        pos = random_coordinates()
-        check = False
-        while not check:
-            if pos in self.snake.positions or \
-                    pos in map(lambda x: x.pos, self.walls) or \
-                    pos in map(lambda x: x.pos, self.apples):
-                pos = random_coordinates()
-                continue
-            check = True
+        pos = random_available_cell(self)
         apple = Apple(*pos)
         self.apples.append(apple)
 
@@ -57,14 +49,7 @@ class Board:
         """
         wall_amount = settings.WALL_AMOUNT
         for i in range(wall_amount):
-            pos = random_coordinates()
-            check = False
-            while not check:
-                if pos in self.snake.positions or \
-                        pos in map(lambda x: x.pos, self.walls):
-                    pos = random_coordinates()
-                    continue
-                check = True
+            pos = random_available_cell(self)
             wall = Wall(*pos)
             self.walls.append(wall)
 

@@ -18,3 +18,13 @@ def lerp(a: int, b: int, step: float) -> int:
 def random_coordinates() -> tuple[int, int]:
     width, height = settings.BOARD_SIZE
     return randint(0, width - 1), randint(0, height - 1)
+
+
+def random_available_cell(board) -> tuple[int, int]:
+    while not board.can_win():
+        pos = random_coordinates()
+        if pos in board.snake.positions or \
+                pos in map(lambda x: x.pos, board.walls) or \
+                pos in map(lambda x: x.pos, board.apples):
+            continue
+        return pos
