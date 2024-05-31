@@ -28,7 +28,8 @@ class Board:
         self.spawn_walls()
 
         self.apples.clear()
-        self.spawn_apple()
+        for i in range(settings.APPLE_AMOUNT):
+            self.spawn_apple()
 
     def spawn_apple(self):
         """
@@ -40,7 +41,9 @@ class Board:
         pos = random_coordinates()
         check = False
         while not check:
-            if pos in self.snake.positions or pos in map(lambda x: x.pos, self.walls):
+            if pos in self.snake.positions or \
+                    pos in map(lambda x: x.pos, self.walls) or \
+                    pos in map(lambda x: x.pos, self.apples):
                 pos = random_coordinates()
                 continue
             check = True
@@ -57,7 +60,8 @@ class Board:
             pos = random_coordinates()
             check = False
             while not check:
-                if pos in self.snake.positions or pos in map(lambda x: x.pos, self.walls):
+                if pos in self.snake.positions or \
+                        pos in map(lambda x: x.pos, self.walls):
                     pos = random_coordinates()
                     continue
                 check = True

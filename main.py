@@ -162,7 +162,14 @@ class Game:
             Button(rect=pygame.rect.Rect(20, 240, 40, 40),
                    text="-", font=Game.font_30, callback=settings.take_wall),
             Button(rect=pygame.rect.Rect(430, 240, 40, 40),
-                   text="+", font=Game.font_30, callback=settings.add_wall)
+                   text="+", font=Game.font_30, callback=settings.add_wall),
+
+            Button(rect=pygame.rect.Rect(75, 295, 340, 40),
+                   text=f"Количество яблок ({settings.APPLE_AMOUNT})", font=Game.font_30),
+            Button(rect=pygame.rect.Rect(20, 295, 40, 40),
+                   text="-", font=Game.font_30, callback=settings.take_apple),
+            Button(rect=pygame.rect.Rect(430, 295, 40, 40),
+                   text="+", font=Game.font_30, callback=settings.add_apple)
         ]
 
         while True:
@@ -179,6 +186,7 @@ class Game:
             buttons[4].update_text(f"Ширина поля ({settings.BOARD_SIZE[0]})")
             buttons[7].update_text(f"Высота поля ({settings.BOARD_SIZE[1]})")
             buttons[10].update_text(f"Количество стен ({settings.WALL_AMOUNT})")
+            buttons[13].update_text(f"Количество яблок ({settings.APPLE_AMOUNT})")
 
             for button in buttons:
                 button.render(self.display)

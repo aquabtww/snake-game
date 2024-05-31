@@ -5,6 +5,7 @@ BOARD_SIZE = [6, 6]
 CELL_SIZE = 50
 
 WALL_AMOUNT = 2
+APPLE_AMOUNT = 1
 
 UPDATE_SPEED = 300
 
@@ -51,3 +52,13 @@ def add_wall():
 def take_wall():
     global WALL_AMOUNT
     WALL_AMOUNT = max(0, WALL_AMOUNT - 1)
+
+
+def add_apple():
+    global APPLE_AMOUNT
+    APPLE_AMOUNT = min(APPLE_AMOUNT + 1, 5)
+
+
+def take_apple():
+    global APPLE_AMOUNT
+    APPLE_AMOUNT = max(1, APPLE_AMOUNT - 1)
